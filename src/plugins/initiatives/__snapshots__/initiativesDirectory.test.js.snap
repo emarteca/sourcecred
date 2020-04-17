@@ -68,6 +68,10 @@ exports[`plugins/initiatives/initiativesDirectory loadDirectory should handle an
   [
     \\"http://example.com/initiatives/initiative-B.json\\",
     \\"N\\\\u0000sourcecred\\\\u0000initiatives\\\\u0000initiative\\\\u0000INITIATIVE_FILE\\\\u0000http://example.com/initiatives\\\\u0000initiative-B.json\\\\u0000\\"
+  ],
+  [
+    \\"http://example.com/initiatives/initiative-C.json\\",
+    \\"N\\\\u0000sourcecred\\\\u0000initiatives\\\\u0000initiative\\\\u0000INITIATIVE_FILE\\\\u0000http://example.com/initiatives\\\\u0000initiative-C.json\\\\u0000\\"
   ]
 ]"
 `;
@@ -148,6 +152,68 @@ exports[`plugins/initiatives/initiativesDirectory loadDirectory should handle an
     \\"weight\\": {
       \\"complete\\": 69,
       \\"incomplete\\": 42
+    }
+  },
+  {
+    \\"champions\\": [
+      \\"http://foo.bar/C/champ\\"
+    ],
+    \\"completed\\": false,
+    \\"contributions\\": {
+      \\"entries\\": [
+        {
+          \\"contributors\\": [
+            \\"https://foo.bar/C/contrib-user\\"
+          ],
+          \\"key\\": \\"add-test-contrib\\",
+          \\"timestampMs\\": 1578517317733,
+          \\"title\\": \\"Add test contrib\\",
+          \\"weight\\": 10
+        }
+      ],
+      \\"urls\\": [
+      ]
+    },
+    \\"dependencies\\": {
+      \\"entries\\": [
+        {
+          \\"contributors\\": [
+            \\"https://foo.bar/C/dep-user\\"
+          ],
+          \\"key\\": \\"add-test-dependency\\",
+          \\"timestampMs\\": 1578002517700,
+          \\"title\\": \\"Add test dependency\\",
+          \\"weight\\": null
+        }
+      ],
+      \\"urls\\": [
+      ]
+    },
+    \\"id\\": [
+      \\"INITIATIVE_FILE\\",
+      \\"http://example.com/initiatives\\",
+      \\"initiative-C.json\\"
+    ],
+    \\"references\\": {
+      \\"entries\\": [
+        {
+          \\"contributors\\": [
+            \\"https://foo.bar/C/ref-user\\"
+          ],
+          \\"key\\": \\"add-test-reference\\",
+          \\"timestampMs\\": 1578517317733,
+          \\"title\\": \\"Add test reference\\",
+          \\"weight\\": null
+        }
+      ],
+      \\"urls\\": [
+      ]
+    },
+    \\"timestampMs\\": 1578517317733,
+    \\"title\\": \\"Initiative C\\",
+    \\"weight\\": {
+      \\"complete\\": 321,
+      \\"incomplete\\": 123
     }
   }
 ]"

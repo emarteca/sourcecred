@@ -113,7 +113,11 @@ describe("plugins/initiatives/initiativesDirectory", () => {
       // Then
       // Shallow copy to sort, because the array is read-only.
       const actualNames = [...fileNames].sort();
-      expect(actualNames).toEqual(["initiative-A.json", "initiative-B.json"]);
+      expect(actualNames).toEqual([
+        "initiative-A.json",
+        "initiative-B.json",
+        "initiative-C.json",
+      ]);
     });
   });
 
@@ -341,6 +345,7 @@ describe("plugins/initiatives/initiativesDirectory", () => {
       expect(urls).toEqual([
         "http://example.com/initiatives/initiative-A.json",
         "http://example.com/initiatives/initiative-B.json",
+        "http://example.com/initiatives/initiative-C.json",
       ]);
       expect(initiatives.map((i) => i.id)).toEqual([
         [
@@ -352,6 +357,11 @@ describe("plugins/initiatives/initiativesDirectory", () => {
           "INITIATIVE_FILE",
           "http://example.com/initiatives",
           "initiative-B.json",
+        ],
+        [
+          "INITIATIVE_FILE",
+          "http://example.com/initiatives",
+          "initiative-C.json",
         ],
       ]);
     });
