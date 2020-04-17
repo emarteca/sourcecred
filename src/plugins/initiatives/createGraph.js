@@ -12,6 +12,7 @@ import {type WeightedGraph as WeightedGraphT} from "../../core/weightedGraph";
 import * as WeightedGraph from "../../core/weightedGraph";
 import type {NodeWeight} from "../../core/weights";
 import type {ReferenceDetector, URL} from "../../core/references";
+import type {EdgeSpec} from "./edgeSpec";
 import type {Initiative, InitiativeRepository} from "./initiative";
 import {addressFromId} from "./initiative";
 import {
@@ -90,9 +91,11 @@ export function createWeightedGraph(
 
     // Generic approach to adding edges when the reference detector has a hit.
     const edgeHandler = (
-      urls: $ReadOnlyArray<URL>,
+      edges: $ReadOnlyArray<URL> | EdgeSpec,
       createEdge: EdgeFactoryT
     ) => {
+      const urls = Array.isArray(edges) ? edges : edges.urls;
+
       for (const url of urls) {
         const addr = refs.addressFromUrl(url);
         if (!addr) continue;

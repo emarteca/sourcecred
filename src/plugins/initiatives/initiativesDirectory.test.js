@@ -7,6 +7,7 @@ import stringify from "json-stable-stringify";
 import {MappedReferenceDetector} from "../../core/references";
 import * as Timestamp from "../../util/timestamp";
 import {type Initiative, createId, addressFromId} from "./initiative";
+import {normalizeEdgeSpec} from "./edgeSpec";
 import {
   type InitiativesDirectory,
   loadDirectory,
@@ -25,18 +26,38 @@ const exampleInitiativeFile = (): InitiativeFile => ({
   weight: {incomplete: 360, complete: 420},
   completed: false,
   champions: ["http://foo.bar/champ"],
-  contributions: ["http://foo.bar/contrib"],
-  dependencies: ["http://foo.bar/dep"],
-  references: ["http://foo.bar/ref"],
+  contributions: {
+    urls: ["http://foo.bar/contrib"],
+    entries: [{title: "Inline contrib"}],
+  },
+  dependencies: {
+    urls: ["http://foo.bar/dep"],
+    entries: [{title: "Inline dep"}],
+  },
+  references: {
+    urls: ["http://foo.bar/ref"],
+    entries: [{title: "Inline ref"}],
+  },
 });
 
 const exampleInitiative = (remoteUrl: string, fileName: string): Initiative => {
-  const {timestampIso, ...partialInitiativeFile} = exampleInitiativeFile();
+  const {
+    timestampIso,
+    contributions,
+    dependencies,
+    references,
+    champions,
+    ...partialInitiativeFile
+  } = exampleInitiativeFile();
   const timestampMs = Timestamp.fromISO(timestampIso);
   return {
     ...partialInitiativeFile,
     id: createId("INITIATIVE_FILE", remoteUrl, fileName),
     timestampMs,
+    champions: champions || [],
+    contributions: normalizeEdgeSpec(contributions, timestampMs),
+    dependencies: normalizeEdgeSpec(dependencies, timestampMs),
+    references: normalizeEdgeSpec(references, timestampMs),
   };
 };
 
