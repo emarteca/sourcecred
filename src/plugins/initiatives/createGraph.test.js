@@ -1,24 +1,39 @@
 // @flow
 
 import {
-  EdgeAddress,
-  NodeAddress,
   type EdgeAddressT,
   type NodeAddressT,
+  EdgeAddress,
+  NodeAddress,
 } from "../../core/graph";
 import * as Weights from "../../core/weights";
-import type {ReferenceDetector, URL} from "../../core/references";
 import * as Timestamp from "../../util/timestamp";
-import type {Initiative, InitiativeRepository} from "./initiative";
-import {createId, addressFromId} from "./initiative";
+import type {ReferenceDetector, URL} from "../../core/references";
 import {createWeightedGraph, initiativeWeight} from "./createGraph";
+import {type NodeEntry, addressForNodeEntry, _titleSlug} from "./nodeEntry";
+import {
+  type Initiative,
+  type InitiativeRepository,
+  createId,
+  addressFromId,
+} from "./initiative";
 import {
   initiativeNodeType,
   dependsOnEdgeType,
   referencesEdgeType,
   contributesToEdgeType,
   championsEdgeType,
+  contributesToEntryEdgeType,
 } from "./declaration";
+
+const exampleEntry = (overrides: $Shape<NodeEntry>): NodeEntry => ({
+  key: overrides.title ? _titleSlug(overrides.title) : "sample-title",
+  title: "Sample title",
+  timestampMs: Timestamp.fromNumber(123),
+  contributors: [],
+  weight: 456,
+  ...overrides,
+});
 
 function _createInitiative(overrides?: $Shape<Initiative>): Initiative {
   return {
@@ -116,6 +131,9 @@ const dependencyEdgeAddress = edgeAddress(dependsOnEdgeType.prefix);
 const referenceEdgeAddress = edgeAddress(referencesEdgeType.prefix);
 const contributionEdgeAddress = edgeAddress(contributesToEdgeType.prefix);
 const championEdgeAddress = edgeAddress(championsEdgeType.prefix);
+const contributesToEntryEdgeAddress = edgeAddress(
+  contributesToEntryEdgeType.prefix
+);
 
 describe("plugins/initiatives/createGraph", () => {
   describe("initiativeWeight", () => {
@@ -281,6 +299,69 @@ describe("plugins/initiatives/createGraph", () => {
         );
       });
 
+      it("should attempt to resolve entry dependency URLs", () => {
+        // Given
+        const {repo, refs} = example();
+        repo.addInitiative({
+          dependencies: {
+            urls: [],
+            entries: [
+              exampleEntry({contributors: ["https://example.com/1/a"]}),
+            ],
+          },
+        });
+
+        // When
+        createWeightedGraph(repo, refs);
+
+        // Then
+        expect(refs.addressFromUrl).toHaveBeenCalledWith(
+          "https://example.com/1/a"
+        );
+      });
+
+      it("should attempt to resolve entry reference URLs", () => {
+        // Given
+        const {repo, refs} = example();
+        repo.addInitiative({
+          references: {
+            urls: [],
+            entries: [
+              exampleEntry({contributors: ["https://example.com/2/a"]}),
+            ],
+          },
+        });
+
+        // When
+        createWeightedGraph(repo, refs);
+
+        // Then
+        expect(refs.addressFromUrl).toHaveBeenCalledWith(
+          "https://example.com/2/a"
+        );
+      });
+
+      it("should attempt to resolve entry contribution URLs", () => {
+        // Given
+        const {repo, refs} = example();
+        repo.addInitiative({
+          contributions: {
+            urls: [],
+            entries: [
+              exampleEntry({contributors: ["https://example.com/3/a"]}),
+            ],
+          },
+        });
+
+        // When
+        createWeightedGraph(repo, refs);
+
+        // Then
+        expect(refs.addressFromUrl).toHaveBeenCalledWith(
+          "https://example.com/3/a"
+        );
+      });
+
       it("should attempt to resolve champion URLs", () => {
         // Given
         const {repo, refs} = example();
@@ -430,6 +511,191 @@ describe("plugins/initiatives/createGraph", () => {
           dst: testInitiativeAddress(1),
           timestampMs: 401,
         });
+      });
+    });
+
+    describe("adding entry nodes with edges", () => {
+      it("should add node and edges for dependency entries", () => {
+        // Given
+        const {repo, refs} = example();
+        refs.addReference("https://example.com/1", exampleNodeAddress(1));
+        repo.addInitiative({
+          dependencies: {
+            urls: [],
+            entries: [
+              exampleEntry({
+                title: "Inline dependency",
+                contributors: ["https://example.com/1"],
+              }),
+            ],
+          },
+        });
+
+        // When
+        const {graph} = createWeightedGraph(repo, refs);
+
+        // Then
+        const entryAddress = addressForNodeEntry(
+          "DEPENDENCY",
+          createId("TEST_SUBTYPE", "1"),
+          "inline-dependency"
+        );
+
+        const nodes = Array.from(graph.nodes({prefix: entryAddress}));
+        const edges = [
+          ...graph.edges({dstPrefix: entryAddress, showDangling: true}),
+          ...graph.edges({srcPrefix: entryAddress, showDangling: true}),
+        ];
+
+        expect(nodes).toEqual([
+          {
+            address: entryAddress,
+            description: "Inline dependency",
+            timestampMs: 123,
+          },
+        ]);
+        expect(edges).toEqual([
+          {
+            address: contributesToEntryEdgeAddress(
+              entryAddress,
+              exampleNodeAddress(1)
+            ),
+            dst: entryAddress,
+            src: exampleNodeAddress(1),
+            timestampMs: 123,
+          },
+          {
+            address: dependencyEdgeAddress(
+              testInitiativeAddress(1),
+              entryAddress
+            ),
+            dst: entryAddress,
+            src: testInitiativeAddress(1),
+            timestampMs: 401,
+          },
+        ]);
+      });
+
+      it("should add node and edges for reference entries", () => {
+        // Given
+        const {repo, refs} = example();
+        refs.addReference("https://example.com/1", exampleNodeAddress(1));
+        repo.addInitiative({
+          references: {
+            urls: [],
+            entries: [
+              exampleEntry({
+                title: "Inline reference",
+                contributors: ["https://example.com/1"],
+              }),
+            ],
+          },
+        });
+
+        // When
+        const {graph} = createWeightedGraph(repo, refs);
+
+        // Then
+        const entryAddress = addressForNodeEntry(
+          "REFERENCE",
+          createId("TEST_SUBTYPE", "1"),
+          "inline-reference"
+        );
+
+        const nodes = Array.from(graph.nodes({prefix: entryAddress}));
+        const edges = [
+          ...graph.edges({dstPrefix: entryAddress, showDangling: true}),
+          ...graph.edges({srcPrefix: entryAddress, showDangling: true}),
+        ];
+        expect(nodes).toEqual([
+          {
+            address: entryAddress,
+            description: "Inline reference",
+            timestampMs: 123,
+          },
+        ]);
+
+        expect(edges).toEqual([
+          {
+            address: contributesToEntryEdgeAddress(
+              entryAddress,
+              exampleNodeAddress(1)
+            ),
+            dst: entryAddress,
+            src: exampleNodeAddress(1),
+            timestampMs: 123,
+          },
+          {
+            address: referenceEdgeAddress(
+              testInitiativeAddress(1),
+              entryAddress
+            ),
+            dst: entryAddress,
+            src: testInitiativeAddress(1),
+            timestampMs: 401,
+          },
+        ]);
+      });
+
+      it("should add edges for contribution URLs it can resolve", () => {
+        // Given
+        const {repo, refs} = example();
+        refs.addReference("https://example.com/1", exampleNodeAddress(1));
+        repo.addInitiative({
+          contributions: {
+            urls: [],
+            entries: [
+              exampleEntry({
+                title: "Inline contribution",
+                contributors: ["https://example.com/1"],
+              }),
+            ],
+          },
+        });
+
+        // When
+        const {graph} = createWeightedGraph(repo, refs);
+
+        // Then
+        const entryAddress = addressForNodeEntry(
+          "CONTRIBUTION",
+          createId("TEST_SUBTYPE", "1"),
+          "inline-contribution"
+        );
+
+        const nodes = Array.from(graph.nodes({prefix: entryAddress}));
+        const edges = [
+          ...graph.edges({dstPrefix: entryAddress, showDangling: true}),
+          ...graph.edges({srcPrefix: entryAddress, showDangling: true}),
+        ];
+
+        expect(nodes).toEqual([
+          {
+            address: entryAddress,
+            description: "Inline contribution",
+            timestampMs: 123,
+          },
+        ]);
+        expect(edges).toEqual([
+          {
+            address: contributesToEntryEdgeAddress(
+              entryAddress,
+              exampleNodeAddress(1)
+            ),
+            dst: entryAddress,
+            src: exampleNodeAddress(1),
+            timestampMs: 123,
+          },
+          {
+            address: contributionEdgeAddress(
+              testInitiativeAddress(1),
+              entryAddress
+            ),
+            dst: testInitiativeAddress(1),
+            src: entryAddress,
+            timestampMs: 401,
+          },
+        ]);
       });
     });
   });
