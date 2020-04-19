@@ -1,0 +1,29 @@
+cli/load 'load' command wrapper errors if the repo identifier is invalid
+src/backend/dataDirectory DataDirectory DataDirectory.database should work when sourcecredDirectory doesn't exist
+src/backend/dataDirectory DataDirectory DataDirectory.storeProject should fail when sourcecredDirectory is a file
+cli/load 'load' command wrapper calls load with a single repo
+cli/load 'load' command wrapper calls load with multiple repos
+core/project_io setupProjectDirectory returns the right directory
+plugins/initiatives/initiativesDirectory loadDirectory should perform localPath testing
+plugins/initiatives/initiativesDirectory loadDirectory should use validated URL to create mappings and addresses
+core/project_io loadProject fails when a different project was saved
+plugins/github/graphqlTypes is up to date
+core/project_io getProjectIds ignores non-project subdirectories
+plugins/initiatives/initiativesDirectory loadDirectory should handle an example smoke test
+"cli/load 'load' command wrapper loads the weights, if provided"
+plugins/initiatives/initiativesDirectory _readFiles should throw when directory is not a directory
+src/backend/dataDirectory DataDirectory DataDirectory.database should create SQLite DB in the cache directory
+core/project_io setupProjectDirectory results in a loadable project
+cli/load 'load' command wrapper errors if the SOURCECRED_GITHUB_TOKEN is unset
+core/project_io loadProject throws an error on bad compat
+core/project_io getProjectIds ignores non-project file entries
+cli/load 'load' command wrapper errors if the weights file is invalid
+src/backend/dataDirectory DataDirectory DataDirectory.database should fail when sourcecredDirectory is a file
+core/project_io projects can be accessed using the encoded ID
+src/backend/dataDirectory DataDirectory DataDirectory.storeProject should populate a project directory
+core/project_io setupProjectDirectory twice results in two loadable projects
+plugins/initiatives/loader loadDirectory should report correct tasks
+src/backend/dataDirectory DataDirectory DataDirectory.storeProject should work when sourcecredDirectory doesn't exist
+core/project_io getProjectIds returns no projects if none were setup
+core/project_io loadProject throws an error on inconsistent id
+cli/load 'load' command wrapper errors if the weights file does not exist
